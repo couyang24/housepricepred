@@ -14,6 +14,8 @@ train<-read_csv("train.csv")
 test<-read_csv("test.csv")
 full <- bind_rows(train,test)
 
+
+# fill NA
 temp <- sapply(full, function(x) sum(is.na(x))) %>% as.data.frame() %>% rownames_to_column()
 
 colnames(temp) <- c('var','num_miss')
@@ -23,10 +25,8 @@ rm_var <- temp %>% filter(num_miss>500) %>% select(var) %>% as.list()
 full <- full[, !colnames(full) %in% rm_var[[1]]]
 
 full <- lapply(full,function(x) as.numeric(as.factor(x))) %>% as.data.frame()
-
-lapply(full,function(x) length(levels(x))) %>% as.data.frame()
-
-full <- lapply(full,function(x) as.factor(x)) %>% as.data.frame()
+# 
+# full <- lapply(full,function(x) as.factor(x)) %>% as.data.frame()
 
 
 mice_mod<-mice(full,method='rf')
@@ -49,4 +49,4 @@ solution <- data.frame(Id=test$Id,SalePrice=rf_pred)
 
 solution %>% View()
 
-write_csv(solution,"rf_benchmark_solution.csv")
+write.csv(solution,"rf_benchmark_solution.csv",row.names = F)

@@ -18,6 +18,10 @@ sapply(full, function(x) sum(is.na(x)))
 head(full)
 dim(full)
 
+non_char <- full[which(sapply(full,class)!="character")]
+char <- full[which(sapply(full,class)=="character")]
+
+
 temp <- sapply(full, function(x) sum(is.na(x))) %>% as.data.frame() %>% rownames_to_column()
 
 colnames(temp) <- c('var','num_miss')
