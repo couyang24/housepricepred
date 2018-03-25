@@ -44,6 +44,8 @@ straincpy[sapply(straincpy, is.factor)] <- lapply(straincpy[sapply(straincpy, is
 stestcpy = sdftest
 stestcpy[sapply(stestcpy, is.factor)] <- lapply(stestcpy[sapply(stestcpy, is.factor)], as.numeric)
 
+sdftrain %>% str()
+
 model.svm <- svm(price ~ ., data = sdftrain, cost = 1)
 price.svm = predict(model.svm, sdftest)
 submission = cbind(Id = id, SalePrice = price.svm)
