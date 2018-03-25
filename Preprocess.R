@@ -29,6 +29,7 @@ for(i in 1:ncol(df)){
 } 
   return(df)
 }
+
 fill_int <- function(df){
   for(i in 1:ncol(df)){
     for(j in 1:nrow(df)){

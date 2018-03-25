@@ -29,16 +29,6 @@ fill_chr <- function(df){
   } 
   return(df)
 }
-fill_int <- function(df){
-  for(i in 1:ncol(df)){
-    for(j in 1:nrow(df)){
-      if(is.na(df[j,i])){
-        df[j,i] = median(df[!is.na(df[,i]),i])
-      }
-    } 
-  } 
-  return(df)
-}
 
 chr <- fill_chr(chr)
 

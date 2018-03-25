@@ -1,6 +1,6 @@
 library(e1071)
 library(Metrics)
-library(glmnet)
+
 
 train <- full[1:length(SalePrice),]
 test<-full[(length(SalePrice)+1):nrow(full),]
