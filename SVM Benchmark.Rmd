@@ -1,30 +1,52 @@
 ---
 title: "SVM benchmark"
-author: "Chengran Ouyang"
-date: "March 25, 2018"
-output: html_document
+author: "Chengran (Owen) Ouyang"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    theme: readable
+    highlight: tango
+    code_folding : hide
 ---
 
-```{r setup, include=FALSE}
+# Goals & Objectives
+
+The goals and objectives of this kernal is to achieve decent score with mininum amount of knowledge and coding. This is a unconventional approach as it is always the key to fully understand the data and EDA is one of most important component of data science analysis. 
+
+The reason why I did not do any EDA or in-depth analysis is just to provide a benchmark score. Then, like everyone else, I would dive into the data and further change the variables to improve accuracy but that would be in another kernal.
+
+By using this approach, it would get your score to be within the top 15% of this challenge. Given the fact that we do not know much about the data, the score is pretty decent.
+
+
+
+
+```{r setup, include=F, message = F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(mice)
+library(e1071)
+library(Metrics)
 ```
 
-## R Markdown
+# Load Datasets
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+train <- read.csv("train.csv", stringsAsFactors = F)
+test <- read.csv("test.csv", stringsAsFactors = F)
+full <- bind_rows(train,test)
 ```
 
-## Including Plots
+# Brief Overview of the Data
 
-You can also embed plots, for example:
+Just a very brief overview of the data, we know the datatypes and many NA's in this datasets. The strategy is very simple. We are going to fill the NA in Character column with 'Not Available' (Can be changed to literally anything).
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+full %>% str()
+full %>% summary()
+sapply(full,function(x) sum(is.na(x)))
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

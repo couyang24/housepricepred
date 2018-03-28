@@ -1,8 +1,8 @@
 library(tidyverse)
+library(mice)
 
 train <- read.csv("train.csv", stringsAsFactors = F)
 test <- read.csv("test.csv", stringsAsFactors = F)
-
 full <- bind_rows(train,test)
 
 full %>% str()
@@ -39,4 +39,4 @@ full <- bind_cols(fac,int)
 micemod <- full %>% mice(method='rf')
 full <- complete(micemod)
 
-rm(chr,fac,int,fill_chr,fill_int,micemod)
+rm(chr,fac,int,fill_chr,micemod)
