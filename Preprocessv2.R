@@ -16,8 +16,8 @@ full[,c('Id','SalePrice')] <- NULL
 
 rm(train,test)
 
-(chr <- full[,sapply(full,is.character)])
-(int <- full[,sapply(full,is.integer)])
+chr <- full[,sapply(full,is.character)]
+int <- full[,sapply(full,is.integer)]
 
 fill_chr <- function(df){
   for(i in 1:ncol(df)){

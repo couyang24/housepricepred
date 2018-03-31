@@ -15,12 +15,9 @@ output:
 
 The goals and objectives of this kernal is to achieve decent score with mininum amount of knowledge and coding. This is a unconventional approach as it is always the key to fully understand the data and EDA is one of most important component of data science analysis. 
 
-The reason why I did not do any EDA or in-depth analysis is just to provide a benchmark score. Then, like everyone else, I would dive into the data and further change the variables to improve accuracy but that would be in another kernal.
+The reason why I did not do any EDA or in-depth analysis is just to provide a benchmark score. Then, like everyone else, I would dive into the data and further alter the variables to improve accuracy but that would be in another kernal.
 
 By using this approach, it would get your score to be within the top 15% of this challenge. Given the fact that we do not know much about the data, the score is pretty decent.
-
-
-
 
 ```{r setup, include=F, message = F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
@@ -33,7 +30,7 @@ library(Metrics)
 # Load Datasets
 
 
-```{r}
+```{r, message = F, warning=F}
 train <- read.csv("train.csv", stringsAsFactors = F)
 test <- read.csv("test.csv", stringsAsFactors = F)
 full <- bind_rows(train,test)
@@ -43,10 +40,74 @@ full <- bind_rows(train,test)
 
 Just a very brief overview of the data, we know the datatypes and many NA's in this datasets. The strategy is very simple. We are going to fill the NA in Character column with 'Not Available' (Can be changed to literally anything).
 
-```{r}
+```{r, message = F, warning=F}
 full %>% str()
 full %>% summary()
 sapply(full,function(x) sum(is.na(x)))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Preprocess Data
+## Separate Id and SalePrice
+
+```{r, message = F, warning=F}
+SalePrice <- train$SalePrice
+Id <- test$Id
+
+full[,c('Id','SalePrice')] <- NULL
+rm(train,test)
+```
+
+## Separate The Dataset into Charactor Variables and Integer Variables
+
+```{r, message = F, warning=F}
+chr <- full[,sapply(full,is.character)]
+int <- full[,sapply(full,is.integer)]
+```
+
+## Create a function to preprocess Charactor variables and turn them into factors
+
+```{r, message = F, warning=F}
+fill_chr <- function(df){
+  for(i in 1:ncol(df)){
+    for(j in 1:nrow(df)){
+      if(is.na(df[j,i])){
+        df[j,i] = "Not Avaiable"
+      }
+    } 
+  } 
+  return(df)
+}
+chr <- fill_chr(chr)
+fac <- chr %>% lapply(as.factor) %>% as.data.frame()
+```
+
+## Use Mice package to fill the NA for Numeric Variable using Random Forest
+
+```{r, message = F, warning=F}
+full <- bind_cols(fac,int)
+
+micemod <- full %>% mice(method='rf')
+full <- complete(micemod)
+
+rm(chr,fac,int,fill_chr,micemod)
+```
+
+# Modelling
+## Separate Train and Test Data
+
+```{r, message = F, warning=F}
+train <- full[1:length(SalePrice),]
+test<-full[(length(SalePrice)+1):nrow(full),]
+```
+
+## Proceed with Support Vector Machine and Save the result
+
+```{r, message = F, warning=F}
+svm_model<-svm(SalePrice~.,data=train,cost = 3)
+svm_pred <- predict(svm_model,newdata = test)
+solution <- data.frame(Id=Id,SalePrice=svm_pred)
+write.csv(solution,"svm_solution.csv",row.names = F)
+```
+
+# Conclusion
+The model should above serves well as the Benchmark approach and it provides decent score without even dive into the dataset.
