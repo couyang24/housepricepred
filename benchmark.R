@@ -1,63 +1,51 @@
 # Load packages
-library(tidyverse)
-library(randomForest)
-library(ggthemes)
-library(corrplot)
-library(caret)
-library(gridExtra)
-library(mice)
-library(rebus)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, mice, e1071, Metrics, skimr)
 
 # Load datasets
 
-train<-read_csv("train.csv")
-test<-read_csv("test.csv")
+train <- read.csv("train.csv", stringsAsFactors = F)
+test <- read.csv("test.csv", stringsAsFactors = F)
 full <- bind_rows(train,test)
 
-summary(full)
-# fill NA
-temp <- sapply(full, function(x) sum(is.na(x))) %>% as.data.frame() %>% rownames_to_column()
+full %>% skim()
+full %>% summary()
+sapply(full,function(x) sum(is.na(x)))
 
-colnames(temp) <- c('var','num_miss')
+SalePrice <- train$SalePrice
+Id <- test$Id
 
-rm_var <- temp %>% filter(num_miss>500) %>% select(var) %>% as.list()
+full[,c('Id','SalePrice')] <- NULL
+rm(train,test)
 
-res_full <- full[, !colnames(full) %in% rm_var[[1]]]
+chr <- full[,sapply(full,is.character)]
+int <- full[,sapply(full,is.integer)]
 
-res_full <- lapply(res_full,function(x) as.integer(as.factor(x))) %>% as.data.frame()
+fill_chr <- function(df){
+  for(i in 1:ncol(df)){
+    for(j in 1:nrow(df)){
+      if(is.na(df[j,i])){
+        df[j,i] = "Not Avaiable"
+      }
+    } 
+  } 
+  return(df)
+}
 
-# full <- lapply(full,function(x) as.factor(x)) %>% as.data.frame()
+chr <- fill_chr(chr)
+fac <- chr %>% lapply(as.factor) %>% as.data.frame()
 
-res_full %>% sapply(function(x) sum(is.na(x)))
+full <- bind_cols(fac,int)
 
+micemod <- full %>% mice(method='rf')
+full <- complete(micemod)
 
-# # fill NA
-# mice_mod<-mice(full,method='rf')
-# completed_full <- complete(mice_mod)
-# 
-# summary(completed_full)
+rm(chr,fac,int,fill_chr,micemod)
 
-# fill NA
-reshaped <- res_full %>% gather(var,value, 2:75)
+train <- full[1:length(SalePrice),]
+test<-full[(length(SalePrice)+1):nrow(full),]
 
-reshaped$value[is.na(reshaped$value)]<--1
-
-completed_full <- reshaped %>% spread(var,value)
-
-
-completed_full$SalePrice <- full$SalePrice
-rm(rm_var,temp,train,test,mice_mod,reshaped)
-
-sapply(completed_full, function(x) sum(is.na(x)))
-
-train <- completed_full %>% filter(!is.na(SalePrice))
-test <- completed_full %>% filter(is.na(SalePrice))
-
-rf_model <- randomForest(SalePrice~.,train)
-rf_pred <- predict(rf_model,newdata=test)
-
-sum(is.na(rf_pred))
-
-solution <- data.frame(Id=test$Id,SalePrice=rf_pred)
-
-write.csv(solution,"rf_benchmark_solution2.csv",row.names = F)
+svm_model<-svm(SalePrice~.,data=train,cost = 3)
+svm_pred <- predict(svm_model,newdata = test)
+solution <- data.frame(Id=Id,SalePrice=svm_pred)
+write.csv(solution,"svm_solution.csv",row.names = F)
