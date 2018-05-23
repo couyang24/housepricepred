@@ -1,5 +1,5 @@
 ---
-title: 'Exploratory analysis  and machine learning model for predicting housing prices with R (data.table and caret)'
+title: 'Exploratory analysis and machine learning model for predicting housing prices with R (data.table and caret)'
 date: "`r format(Sys.Date())`"
 author: "Bart Boerman"
 output:
@@ -94,7 +94,7 @@ knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE) ## some default
 ## Load data into R
 
 ```{r}
-train.dt <- fread(input = "train.csv", 
+train.dt <- fread(input = "input/train.csv", 
                   sep = ",", 
                   nrows = -1,
                   header = T,
@@ -105,7 +105,7 @@ train.dt <- fread(input = "train.csv",
                   blank.lines.skip = T,
                   data.table = T
 ) 
-test.dt <- fread(input = "test.csv", 
+test.dt <- fread(input = "input/test.csv", 
                  sep = ",", 
                  nrows = -1,
                  header = T,
